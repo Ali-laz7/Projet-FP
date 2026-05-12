@@ -5556,7 +5556,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6833364473919995960, guid: 8c3a2ad61ba2f934393c039b14cb660e, type: 3}
       propertyPath: m_Name
-      value: First Person Controller Variant
+      value: First Person Controller Updated
       objectReference: {fileID: 0}
     - target: {fileID: 6835412361466551184, guid: 8c3a2ad61ba2f934393c039b14cb660e, type: 3}
       propertyPath: m_LocalPosition.x
