@@ -1,0 +1,114 @@
+﻿
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+#define IS_URP_RTX 1
+#define SHADER_STAGE_RAY_TRACING 1
+
+#include "../../Includes/RaytraceTemporalHelpers.cginc"
+#include "../../Includes/RaytraceDataHelpers.cginc"
+#include "../../Includes/ShadowsPayload.cginc"
+
+RW_TEXTURE2D_X(float4, RenderTarget);
+float4x4 _CameraToWorld;
+
+XR_TEXTURE2D_X(_CameraDepthTexture);
+SamplerState sampler_CameraDepthTexture;
+SamplerState _LinearClamp;
+
+#pragma max_recursion_depth 2
+
+float step_count;
+float step_intensity;
+float MaxShadowDistance;
+
+[shader("raygeneration")]
+void URP_VolumetricLightingRayGen()
+{
+    // figure out where we are 
+    uint3 dispatchId = DispatchRaysIndex();
+    uint3 dispatchDim = DispatchRaysDimensions();
+    
+    UNITY_XR_ASSIGN_VIEW_INDEX(dispatchId.z);
+    // UNITY_XR_FALLBACK_VIEW_INDEX(dispatchId.z);
+
+    TEMPORAL_SKIP(dispatchId);
+
+    float2 texcoord = (dispatchId.xy + float2(0.5, 0.5)) / float2(dispatchDim.x, dispatchDim.y);
+    float3 viewPosition = float3(texcoord * 2.0 - float2(1.0, 1.0), 0.0);
+
+    float4 clip = float4(viewPosition.xyz, 1.0);
+    float4 viewPos = mul(GET_INVERSE_PROJECTION, clip);
+           viewPos.xyz /= viewPos.w;
+
+    float3 worldPos = mul(_CameraToWorld, float4(viewPos.xyz, 1.0));
+    float3 worldDirection = normalize(worldPos - _WorldSpaceCameraPos);
+
+    // start 
+    // float until_z = XR_SAMPLE_TEXTURE2D_X_LOD(_CameraDepthTexture, sampler_CameraDepthTexture, saturate(texcoord), 0).r;
+    // float4 linearDepthVec = mul(GET_INVERSE_PROJECTION, float4(viewPosition.x, viewPosition.y, until_z, 1));
+    //        linearDepthVec.xyz /= linearDepthVec.w;
+    // 
+    // float3 worldPositionAtDepth = mul(_CameraToWorld, float4(linearDepthVec.xyz, 1)).xyz;
+    // float until_depth = length(worldPositionAtDepth - _WorldSpaceCameraPos); //  - 0.1;
+    //       until_depth = clamp(until_depth, 1.0, 1000.0);
+
+    float max_depth = MaxShadowDistance; // min(256, until_depth);
+
+    // step size 
+    float step_size = max_depth / step_count;
+    float intensity_scale = step_intensity / step_count;
+
+    // artificially darken volumetric shadows drawn over the skybox.. 
+    // if (max_depth >= 255)
+    // {
+    //     intensity_scale = 1; //  128.0 / step_count;
+    // }
+
+    float result = 1.0;
+
+    RayDesc ray;
+    ray.TMin = 0.0;
+    ray.TMax = _MaxRayDistance;
+    ray.Origin = _WorldSpaceCameraPos;
+    ray.Direction = _WorldSpaceLightPos0;
+
+    ShadowsPayload payload;
+    payload.rayIntensity = intensity_scale;
+    payload.rayType = 1.0;
+    payload.light = 1.0;
+
+    for (float i = 0.0; i < step_count; ++i)
+    {
+        float t = i / step_count;
+        float t_world = t * max_depth;
+
+        // would go past existing geometry 
+        if(t_world >= max_depth - 0.01)
+        {
+            break; 
+        }
+
+        ray.Origin = _WorldSpaceCameraPos + worldDirection * t_world;
+        ray.Direction = _WorldSpaceLightPos0;
+    
+        payload.light = 1.0;
+
+        TraceRay(_RaytracingAccelerationStructure, _RayFlags, _RaytraceAgainstLayers, 0, 1, 0, ray, payload);
+        
+        float shadow = 1.0 - payload.light;
+        result -= shadow; 
+    }
+
+    result = saturate(result);
+    result = 1.0 - result;
+    result *= 0.5;
+    result = 1.0 - result;
+
+    RenderTarget[COORD_TEXTURE2D_X(dispatchId.xy)] = result; 
+}
+
+[shader("miss")]
+void ShadowRayMiss(inout ShadowsPayload payload : SV_RayPayload)
+{
+    payload.light = 1;
+}

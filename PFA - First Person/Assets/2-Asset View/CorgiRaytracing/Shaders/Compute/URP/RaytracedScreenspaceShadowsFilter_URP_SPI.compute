@@ -1,0 +1,6 @@
+﻿#pragma kernel SmoothShadows
+#pragma kernel HardShadows
+#pragma kernel VolumetricSmoothShadows
+
+#define CORGI_SPI_ENABLED
+#include "RaytracedScreenspaceShadowsFilter_URP.cginc"

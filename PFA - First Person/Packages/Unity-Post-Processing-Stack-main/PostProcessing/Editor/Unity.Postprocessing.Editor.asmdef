@@ -1,0 +1,47 @@
+{
+    "name": "Unity.Postprocessing.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Unity.Postprocessing.Runtime",
+        "Unity.XR.Management",
+        "Unity.XR.Management.Editor",
+        "com.thenakeddev.fsr.Runtime",
+        "com.thenakeddev.dlss.Runtime",
+        "com.thenakeddev.dlss.Editor",
+        "com.thenakeddev.sgsr.Runtime",
+        "com.thenakeddev.xess.Runtime",
+        "com.alteregogames.aeg-fsr.Runtime",
+        "com.alteregogames.aeg-fsr.Editor",
+        "com.alteregogames.aeg-dlss.Runtime",
+        "com.alteregogames.aeg-dlss.Editor",
+        "com.thenakeddev.sgsr2.Runtime",
+        "com.thenakeddev.aasr.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.xr.management",
+            "expression": "4.0.1",
+            "define": "XR_MANAGEMENT_4_0_1_OR_NEWER"
+        },
+        {
+            "name": "com.unity.modules.vr",
+            "expression": "1.0.0",
+            "define": "ENABLE_VR_MODULE"
+        },
+        {
+            "name": "com.unity.modules.xr",
+            "expression": "1.0.0",
+            "define": "ENABLE_XR_MODULE"
+        }
+    ],
+    "noEngineReferences": false
+}

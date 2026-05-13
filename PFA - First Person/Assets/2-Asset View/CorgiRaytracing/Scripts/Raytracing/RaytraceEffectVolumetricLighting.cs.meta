@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: cd15a277c23232d41a98bc4373017fc5
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _RaytracingShader: {fileID: 4807578003741378534, guid: 9544572d4085cf34e8e89c8f166fa4c8,
+      type: 3}
+  - RaytraceRenderer: {instanceID: 0}
+  - _RenderTexture: {instanceID: 0}
+  - _camera: {instanceID: 0}
+  - TemporalReprojection: {fileID: 7200000, guid: ca54e5c060f244749b64f4b150b22d2d,
+      type: 3}
+  - BlurShader: {fileID: 7200000, guid: 9ff6781efc2ad2944854470fd5f7475a, type: 3}
+  - BlitShader: {fileID: 4800000, guid: 990452bab2a6b904c85697a2a7eaa56a, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

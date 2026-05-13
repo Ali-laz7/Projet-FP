@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c5f19f747a06d24096598d4b6d08712, type: 3}
+  m_Name: URPRaytraceFeatureRenderData
+  m_EditorClassIdentifier: 
+  _RaytracingShader: {fileID: 4807578003741378534, guid: 6b0711b3f980853438d1213ab4ffc871,
+    type: 3}
+  BlitMaterial: {fileID: 2100000, guid: fe5d6e6d92d7b654ca81cc160ba4165c, type: 2}
+  BlitToCameraMaterial: {fileID: 2100000, guid: 4d883ddcc1945d34ca0df9776e692977,
+    type: 2}

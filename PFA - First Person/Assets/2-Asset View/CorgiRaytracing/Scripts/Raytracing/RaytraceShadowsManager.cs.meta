@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 125e461b79edc1e4aa33c6d4fa41c176
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _RaytracingShader: {fileID: 4807578003741378534, guid: 0392237b951c9f046907211e005dbb45,
+      type: 3}
+  - _RenderTexture: {instanceID: 0}
+  - _camera: {instanceID: 0}
+  - DeferredShadingOverride: {fileID: 4800000, guid: ba1dbf230f671fd4fad294179a1848ca,
+      type: 3}
+  - ForwardShadows: {fileID: 7200000, guid: 9ff6781efc2ad2944854470fd5f7475a, type: 3}
+  - TemporalReprojection: {fileID: 7200000, guid: ca54e5c060f244749b64f4b150b22d2d,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

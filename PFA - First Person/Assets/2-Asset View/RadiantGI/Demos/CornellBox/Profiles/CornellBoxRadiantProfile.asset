@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9553644ef4e144acea7900a522754096, type: 3}
+  m_Name: CornellBoxRadiantProfile
+  m_EditorClassIdentifier: 
+  indirectIntensity: 1
+  indirectDistanceAttenuation: 0.5
+  indirectMaxSourceBrightness: 8
+  normalMapInfluence: 1
+  rayBounce: 1
+  lumaInfluence: 0
+  nearFieldObscurance: 3.5
+  nearFieldObscuranceSpread: 0.06
+  nearFieldObscuranceMaxCameraDistance: 125
+  nearFieldObscuranceOccluderDistance: 0.7
+  nearFieldObscuranceTintColor: {r: 0, g: 0, b: 0, a: 1}
+  virtualEmitters: 0
+  organicLight: 0
+  organicLightThreshold: 0.5
+  organicLightSpread: 0.98
+  organicLightNormalsInfluence: 0.95
+  organicLightTintColor: {r: 1, g: 1, b: 1, a: 1}
+  organicLightAnimationSpeed: {x: 0, y: 0, z: 0}
+  organicLightDistanceScaling: 0
+  rayCount: 1
+  rayMaxLength: 2.5
+  rayMaxSamples: 16
+  rayJitter: 0.1
+  thickness: 0.3
+  rayBinarySearch: 1
+  fallbackReuseRays: 1
+  rayReuse: 1
+  fallbackReflectionProbes: 0
+  probesIntensity: 1
+  fallbackReflectiveShadowMap: 0
+  reflectiveShadowMapIntensity: 0.8
+  downsampling: 1
+  raytracerAccuracy: 8
+  smoothing: 4
+  temporalReprojection: 1
+  temporalResponseSpeed: 8
+  temporalCameraTranslationResponse: 200
+  temporalDepthRejection: 1
+  temporalChromaThreshold: 0.2
+  showInEditMode: 0
+  showInSceneView: 1
+  brightnessThreshold: 0
+  brightnessMax: 8
+  specularContribution: 0.75
+  sourceBrightness: 1
+  giWeight: 0
+  nearCameraAttenuation: 0
+  saturation: 1
+  limitToVolumeBounds: 0
+  stencilCheck: 0
+  stencilValue: 0
+  stencilCompareFunction: 6
+  debugView: 0
+  debugDepthMultiplier: 10
+  compareMode: 0
+  compareSameSide: 0
+  comparePanning: 0.25
+  compareLineAngle: 1.4
+  compareLineWidth: 0.002

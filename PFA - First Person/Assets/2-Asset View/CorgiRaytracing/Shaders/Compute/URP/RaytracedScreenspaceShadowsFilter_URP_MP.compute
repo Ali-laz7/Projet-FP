@@ -1,0 +1,5 @@
+﻿#pragma kernel SmoothShadows
+#pragma kernel HardShadows
+#pragma kernel VolumetricSmoothShadows
+
+#include "RaytracedScreenspaceShadowsFilter_URP.cginc"

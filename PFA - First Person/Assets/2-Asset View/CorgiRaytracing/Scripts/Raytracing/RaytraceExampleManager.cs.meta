@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 5e9cc360634bd264db8864dcff5ef63a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _RaytracingShader: {fileID: 4807578003741378534, guid: d7237ba3772b4fc4eade42efe0227bf2,
+      type: 3}
+  - RaytraceRenderer: {instanceID: 0}
+  - _RenderTexture: {instanceID: 0}
+  - _camera: {instanceID: 0}
+  - TemporalReprojection: {fileID: 7200000, guid: ca54e5c060f244749b64f4b150b22d2d,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

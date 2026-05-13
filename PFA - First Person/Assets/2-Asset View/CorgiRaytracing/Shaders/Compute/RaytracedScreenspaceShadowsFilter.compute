@@ -1,0 +1,200 @@
+﻿#pragma kernel SmoothShadows
+#pragma kernel HardShadows
+#pragma kernel VolumetricSmoothShadows
+
+#include "HLSLSupport.cginc"
+#include "UnityShaderVariables.cginc"
+#include "UnityShadowLibrary.cginc"
+#include "UnityCG.cginc"
+
+
+Texture2D<float> _CameraDepthTexture;
+SamplerState sampler_CameraDepthTexture;
+
+
+Texture2D<float> _ShadowmapTemp;
+SamplerComparisonState sampler_ShadowmapTemp;
+SamplerComparisonState _LinearClampCompare;
+float4 _ShadowmapTemp_TexelSize;
+
+RWTexture2D<float> _ShadowMap;
+SamplerComparisonState sampler_ShadowMap;
+
+SamplerState _LinearClamp;
+float4 _ShadowMap_TexelSize;
+
+float _ShadowStrength;
+
+int _textureWidth;
+int _textureHeight;
+
+float SampleShadowMap(int2 uv)
+{
+    // float2 uvf = float2(uv * _ShadowmapTemp_TexelSize.zw);
+    // float depth = _ShadowmapTemp.SampleLevel(_LinearClamp, uvf, 0).r;
+    // return depth; 
+
+    uv.x = clamp(uv.x, 1, _textureWidth - 2);
+    uv.y = clamp(uv.y, 1, _textureHeight - 2);
+    return _ShadowmapTemp[uv];
+}
+
+float CorgiSampleShadow(float3 uv)
+{
+	return 1.0 - _ShadowmapTemp.SampleCmpLevelZero(_LinearClampCompare, saturate(uv.xy), uv.z);
+}
+
+float SampleShadowMap_3x3(int2 uv)
+{
+    float shadow = 1;
+
+    shadow = 0;
+    shadow += SampleShadowMap(uv + int2(-1, -1));   
+    shadow += SampleShadowMap(uv + int2(0, -1));    
+    shadow += SampleShadowMap(uv + int2(1, -1));    
+    shadow += SampleShadowMap(uv + int2(-1, 0));    
+    shadow += SampleShadowMap(uv + int2(0, 0));     
+    shadow += SampleShadowMap(uv + int2(1, 0));     
+    shadow += SampleShadowMap(uv + int2(-1, 1));    
+    shadow += SampleShadowMap(uv + int2(0, 1));     
+    shadow += SampleShadowMap(uv + int2(1, 1));     
+    shadow /= 9.0;
+
+    return shadow;
+}
+
+float SampleShadowMap_Variable(int2 uv)
+{
+
+	// increase this value for more expensive shadow filtering
+	const int iwidth = 4; 
+
+    float shadow = 0.0;
+    float counter = 0;
+
+    for (int x = -iwidth; x <= iwidth; ++x)
+    for (int y = -iwidth; y <= iwidth; ++y)
+    {
+        counter++;
+        shadow += SampleShadowMap(uv + int2(x, y));
+    }
+
+    shadow /= counter;
+
+    return shadow;
+}
+
+// modified from Unity's shader source 
+half Corgi_SampleShadowmap_PCF7x7Tent(float4 coord, float3 receiverPlaneDepthBias)
+{
+	// tent base is 7x7 base thus covering from 49 to 64 texels, thus we need 16 bilinear PCF fetches
+	float2 tentCenterInTexelSpace = coord.xy * _ShadowmapTemp_TexelSize.zw;
+	float2 centerOfFetchesInTexelSpace = floor(tentCenterInTexelSpace + 0.5);
+	float2 offsetFromTentCenterToCenterOfFetches = tentCenterInTexelSpace - centerOfFetchesInTexelSpace;
+
+	// find the weight of each texel based on the area of a 45 degree slop tent above each of them.
+	float4 texelsWeightsU_A, texelsWeightsU_B;
+	float4 texelsWeightsV_A, texelsWeightsV_B;
+	_UnityInternalGetWeightPerTexel_7TexelsWideTriangleFilter(offsetFromTentCenterToCenterOfFetches.x, texelsWeightsU_A, texelsWeightsU_B);
+	_UnityInternalGetWeightPerTexel_7TexelsWideTriangleFilter(offsetFromTentCenterToCenterOfFetches.y, texelsWeightsV_A, texelsWeightsV_B);
+
+	// each fetch will cover a group of 2x2 texels, the weight of each group is the sum of the weights of the texels
+	float4 fetchesWeightsU = float4(texelsWeightsU_A.xz, texelsWeightsU_B.xz) + float4(texelsWeightsU_A.yw, texelsWeightsU_B.yw);
+	float4 fetchesWeightsV = float4(texelsWeightsV_A.xz, texelsWeightsV_B.xz) + float4(texelsWeightsV_A.yw, texelsWeightsV_B.yw);
+
+	// move the PCF bilinear fetches to respect texels weights
+	float4 fetchesOffsetsU = float4(texelsWeightsU_A.yw, texelsWeightsU_B.yw) / fetchesWeightsU.xyzw + float4(-3.5, -1.5, 0.5, 2.5);
+	float4 fetchesOffsetsV = float4(texelsWeightsV_A.yw, texelsWeightsV_B.yw) / fetchesWeightsV.xyzw + float4(-3.5, -1.5, 0.5, 2.5);
+	fetchesOffsetsU *= _ShadowmapTemp_TexelSize.xxxx;
+	fetchesOffsetsV *= _ShadowmapTemp_TexelSize.yyyy;
+
+	// fetch !
+	float2 bilinearFetchOrigin = centerOfFetchesInTexelSpace * _ShadowmapTemp_TexelSize.xy;
+
+	float shadow; 
+	shadow =  fetchesWeightsU.x * fetchesWeightsV.x * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.x, fetchesOffsetsV.x), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.y * fetchesWeightsV.x * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.y, fetchesOffsetsV.x), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.z * fetchesWeightsV.x * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.z, fetchesOffsetsV.x), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.w * fetchesWeightsV.x * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.w, fetchesOffsetsV.x), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.x * fetchesWeightsV.y * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.x, fetchesOffsetsV.y), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.y * fetchesWeightsV.y * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.y, fetchesOffsetsV.y), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.z * fetchesWeightsV.y * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.z, fetchesOffsetsV.y), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.w * fetchesWeightsV.y * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.w, fetchesOffsetsV.y), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.x * fetchesWeightsV.z * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.x, fetchesOffsetsV.z), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.y * fetchesWeightsV.z * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.y, fetchesOffsetsV.z), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.z * fetchesWeightsV.z * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.z, fetchesOffsetsV.z), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.w * fetchesWeightsV.z * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.w, fetchesOffsetsV.z), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.x * fetchesWeightsV.w * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.x, fetchesOffsetsV.w), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.y * fetchesWeightsV.w * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.y, fetchesOffsetsV.w), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.z * fetchesWeightsV.w * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.z, fetchesOffsetsV.w), coord.z, receiverPlaneDepthBias));
+	shadow += fetchesWeightsU.w * fetchesWeightsV.w * CorgiSampleShadow(UnityCombineShadowcoordComponents(bilinearFetchOrigin, float2(fetchesOffsetsU.w, fetchesOffsetsV.w), coord.z, receiverPlaneDepthBias));
+
+	return shadow;
+}
+
+
+
+
+
+[numthreads(32, 32, 1)]
+void SmoothShadows(int3 id : SV_DispatchThreadID)
+{
+    // bounds check :( 
+    if (id.x >= _textureWidth || id.y >= _textureHeight)
+    {
+        return;
+    }
+
+    float shadows = SampleShadowMap_Variable(id.xy); 
+
+	// uncomment for unity-like soft shadows 
+	// float4 uv = float4(id.xy * _ShadowmapTemp_TexelSize.xy, 0, 1);
+	// float depth = _CameraDepthTexture.SampleLevel(sampler_CameraDepthTexture, uv.xy, 0).r;
+	// uv.z = depth;
+	// 
+	// float shadows = Corgi_SampleShadowmap_PCF7x7Tent(uv, 0);
+
+    shadows = 1.0 - shadows;
+    shadows *= _ShadowStrength;
+    shadows = 1.0 - shadows; 
+
+    _ShadowMap[id.xy] = shadows;
+}
+
+[numthreads(32, 32, 1)]
+void HardShadows(int3 id : SV_DispatchThreadID)
+{
+    // bounds check :( 
+    if (id.x >= _textureWidth || id.y >= _textureHeight)
+    {
+        return;
+    }
+
+    int2 uv = id.xy;
+    float shadows = SampleShadowMap(uv); 
+
+    shadows = 1.0 - shadows;
+    shadows *= _ShadowStrength;
+    shadows = 1.0 - shadows;
+
+    _ShadowMap[id.xy] = shadows;
+}
+
+[numthreads(32, 32, 1)]
+void VolumetricSmoothShadows(int3 id : SV_DispatchThreadID)
+{
+    // bounds check :( 
+    if (id.x >= _textureWidth || id.y >= _textureHeight)
+    {
+        return;
+    }
+
+    float shadows = SampleShadowMap_Variable(id.xy);
+    //float shadows = SampleShadowMap(uv);
+
+    shadows = 1.0 - shadows;
+    shadows *= _ShadowStrength;
+    shadows = 1.0 - shadows;
+
+    _ShadowMap[id.xy] = shadows;
+}

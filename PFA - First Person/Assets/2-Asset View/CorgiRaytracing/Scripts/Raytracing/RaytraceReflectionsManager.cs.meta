@@ -1,0 +1,25 @@
+fileFormatVersion: 2
+guid: 09a312b377180b84aa479ab6104ae96f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - _RaytracingShader: {fileID: 4807578003741378534, guid: a971521f296f4ff4c96d0913e66192c2,
+      type: 3}
+  - _RenderTexture: {instanceID: 0}
+  - _camera: {instanceID: 0}
+  - skybox: {fileID: 8900000, guid: a8179a04a9b3d994cb25a7da504d116c, type: 2}
+  - DeferredReflections: {fileID: 4800000, guid: dc7f570f0bd10604a90b18e681cc749a,
+      type: 3}
+  - ForwardReflections: {fileID: 4800000, guid: b3d8b02cbe1ef8142a11d9d36aa20b90,
+      type: 3}
+  - FallbackSkybox: {fileID: 8900000, guid: a8179a04a9b3d994cb25a7da504d116c, type: 2}
+  - TemporalReprojection: {fileID: 7200000, guid: ca54e5c060f244749b64f4b150b22d2d,
+      type: 3}
+  - gaussianDownsample: {fileID: 7200000, guid: 4bc6dfb464936ea4382055e0541e8c0e,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

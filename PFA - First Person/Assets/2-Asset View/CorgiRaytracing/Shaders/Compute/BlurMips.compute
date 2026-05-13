@@ -1,0 +1,45 @@
+﻿#pragma kernel KMain
+
+Texture2D<float4> _Source;
+RWTexture2D<float4> _Result;
+
+float4 _Size;
+SamplerState _LinearClamp;
+
+float4 GetBlurResult(int2 id, int2 direction)
+{
+	float4 sample0 = _Source[id];
+	float4 sample1 = _Source[id - direction.xy];
+	float4 sample2 = _Source[id + direction.xy];
+
+	float4 result = (sample0 + sample1 + sample2) / 3; 
+	return result; 
+}
+
+float4 GetBlurResult(float2 uv, float2 direction)
+{
+	float4 sample0 = _Source.SampleLevel(_LinearClamp, uv, 0);
+	float4 sample1 = _Source.SampleLevel(_LinearClamp, uv - direction, 0);
+	float4 sample2 = _Source.SampleLevel(_LinearClamp, uv + direction, 0);
+
+	float4 result = (sample0 + sample1 + sample2) / 3;
+	return result;
+}
+
+[numthreads(8, 8, 1)]
+void KMain (uint3 id : SV_DispatchThreadID)
+{
+	// float4 result_x = GetBlurResult(id.xy, int2(1, 0));
+	// float4 result_y = GetBlurResult(id.xy, int2(0, 1));
+	// float4 result = (result_x + result_y) / 2; 
+	// 
+	// // barrier 
+	// AllMemoryBarrierWithGroupSync(); 
+
+	float2 uv = id.xy * _Size.zw; 
+	float4 result_x = GetBlurResult(uv, float2(_Size.z, 0));
+	float4 result_y = GetBlurResult(uv, float2(0, _Size.w));
+	float4 result = (result_x + result_y) / 2;
+
+	_Result[id.xy] = result;
+}
