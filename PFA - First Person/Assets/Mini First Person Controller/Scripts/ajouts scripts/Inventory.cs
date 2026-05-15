@@ -6,6 +6,7 @@ public class Inventory : MonoBehaviour
 {
 
     public static List<string> flagList = new List<string>();
+    //[SerializeField] List<string> flagList;
     public void ResetList()
     {
         flagList = new List<string>();
