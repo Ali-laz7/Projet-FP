@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using AmplifyShaderEditor;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class FirstPersonMovement : MonoBehaviour
 {
     public float speed = 5;
+
 
     [Header("Running")]
     public bool canRun = true;
@@ -15,18 +18,31 @@ public class FirstPersonMovement : MonoBehaviour
     /// <summary> Functions to override movement speed. Will use the last added override. </summary>
     public List<System.Func<float>> speedOverrides = new List<System.Func<float>>();
 
-
+    General actions;
+    bool runInput;
+    Vector2 moveInput;
 
     void Awake()
     {
         // Get the rigidbody on this.
         rigidbody = GetComponent<Rigidbody>();
+        actions = new General();
+        actions.Enable();
+        actions.Controles.Run.started += ctx => runInput = true;
+        actions.Controles.Run.canceled += ctx => runInput = false;
+
+
+        actions.Controles.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
+        actions.Controles.Move.canceled += ctx => moveInput = ctx.ReadValue<Vector2>();
+
     }
 
-    void FixedUpdate()
+    void FixedUpdate() 
     {
         // Update IsRunning from input.
-        IsRunning = canRun && Input.GetKey(runningKey);
+        //IsRunning = canRun && Input.GetKey(runningKey);
+        IsRunning = canRun && runInput;
+
 
         // Get targetMovingSpeed.
         float targetMovingSpeed = IsRunning ? runSpeed : speed;
@@ -36,8 +52,8 @@ public class FirstPersonMovement : MonoBehaviour
         }
 
         // Get targetVelocity from input.
-        Vector2 targetVelocity =new Vector2( Input.GetAxis("Horizontal") * targetMovingSpeed, Input.GetAxis("Vertical") * targetMovingSpeed);
-
+        //Vector2 targetVelocity =new Vector2( Input.GetAxis("Horizontal") * targetMovingSpeed, Input.GetAxis("Vertical") * targetMovingSpeed);
+        Vector2 targetVelocity = new Vector2( moveInput.x * targetMovingSpeed, moveInput.y * targetMovingSpeed);
         // Apply movement.
         rigidbody.velocity = transform.rotation * new Vector3(targetVelocity.x, rigidbody.velocity.y, targetVelocity.y);
     }
