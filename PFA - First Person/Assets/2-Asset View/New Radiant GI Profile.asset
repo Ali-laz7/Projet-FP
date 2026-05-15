@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   indirectIntensity: 0.2
   indirectDistanceAttenuation: 0
-  indirectMaxSourceBrightness: 8
+  indirectMaxSourceBrightness: 3
   normalMapInfluence: 1
   rayBounce: 0
   lumaInfluence: 0
   nearFieldObscurance: 5
   nearFieldObscuranceSpread: 0.2
   nearFieldObscuranceMaxCameraDistance: 125
-  nearFieldObscuranceOccluderDistance: 0.825
-  nearFieldObscuranceTintColor: {r: 0, g: 0, b: 0, a: 1}
+  nearFieldObscuranceOccluderDistance: 1
+  nearFieldObscuranceTintColor: {r: 0.78867924, g: 0.78867924, b: 0.78867924, a: 1}
   virtualEmitters: 0
   organicLight: 0
   organicLightThreshold: 0.5
@@ -35,7 +35,7 @@ MonoBehaviour:
   rayMaxLength: 8
   rayMaxSamples: 32
   rayJitter: 0
-  thickness: 1
+  thickness: 4
   rayBinarySearch: 1
   fallbackReuseRays: 0
   rayReuse: 0
@@ -53,7 +53,7 @@ MonoBehaviour:
   temporalChromaThreshold: 0.2
   showInEditMode: 1
   showInSceneView: 1
-  brightnessThreshold: 0
+  brightnessThreshold: 0.5
   brightnessMax: 8
   specularContribution: 0.75
   sourceBrightness: 1.1
